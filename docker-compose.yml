@@ -1,0 +1,33 @@
+# version: '3.8' # Linha opcional, pode remover.
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: finance_db_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456789'
+      MYSQL_DATABASE: 'finance_app_db'
+      MYSQL_USER: 'finance_user'
+      MYSQL_PASSWORD: '123456789'
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_finance_data:/var/lib/mysql
+
+  backend: # Todas as linhas abaixo devem ter pelo menos dois espaços de recuo
+    build: ./backend # Instrui o Compose a construir a imagem a partir da pasta 'backend'
+    container_name: finance_backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001" # Mapeia a porta do seu PC para a porta do contêiner
+    environment:
+      # CORREÇÃO 1: Sintaxe correta
+      # CORREÇÃO 2: Hostname mudado de 'localhost' para 'db'
+      DATABASE_URL: "mysql://finance_user:123456789@db:3306/finance_app_db"
+      PORT: '3001'
+    depends_on:
+      - db # Garante que o serviço 'db' inicie antes do 'backend'
+
+volumes:
+  mysql_finance_data:
